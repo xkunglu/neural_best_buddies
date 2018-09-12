@@ -1,6 +1,15 @@
 # Neural Best-Buddies in PyTorch
 
-This is our PyTorch implementation for the Neural-Best Buddies paper. It is still under active development.
+This is a fork of Kfir Aberman and Mingyi Shi's Neural Best Buddies repo. Contains only minor changes. Original can be found in 
+https://github.com/kfiraberman/neural_best_buddies.
+
+* changes: 
+  automatically convert images to size 224x224; larger images fail in original depot
+
+Below the line is information included in original repo. 
+
+-----------------
+
 
 The code was written by [Kfir Aberman](https://kfiraberman.github.io/) and supported by [Mingyi Shi](https://rubbly.cn/).
 
