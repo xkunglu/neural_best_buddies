@@ -5,10 +5,8 @@ import numpy as np
 import scipy.io
 from PIL import Image
 import inspect, re
-import numpy as np
 import os
 import math
-from PIL import Image
 import torchvision.transforms as transforms
 import collections
 
@@ -16,9 +14,12 @@ import collections
 # |imtype|: the desired type of the converted numpy array
 def read_image(path, witdh):
     I = Image.open(path).convert('RGB')
-    if not (I.size ==(224,224)):
-        I = I.resize((224,224))
+
+    # figure out why transform doesnt handle image an image that is 1024**2
+    if not I.size == (224, 224):
+        I = I.resize((224, 224))
         print('resized to fit VGG')
+
     transform = get_transform(witdh)
     return transform(I).unsqueeze(0)
 

@@ -4,7 +4,7 @@ import math
 from torch.autograd import Variable
 import numpy as np
 from PIL import Image
-from util import util
+from . import util
 import numpy as np
 
 def color_map(i):

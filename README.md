@@ -1,11 +1,34 @@
 # Neural Best-Buddies in PyTorch
 
-This is a fork of Kfir Aberman and Mingyi Shi's Neural Best Buddies repo. Contains only minor changes. Original can be found in 
+This is a fork of Kfir Aberman and Mingyi Shi's Neural Best Buddies repo. 
+Contains only minor changes. Original can be found in 
 https://github.com/kfiraberman/neural_best_buddies.
 
 * changes: 
   automatically convert images to size 224x224; larger images fail in original depot
+  TODO need to investigate why, original repo tries to do resizing with torchvision transform
 
+  added pip installer:
+  ```bash
+  cd neural_best_buddies
+  pip install .
+
+  ```
+  
+  added access from python.
+  TODO file loading and saving as options; enable numpy array io
+  ```python
+  import nbb
+  from nbb.options import Options
+  datarootA = 'images/original_A.png'
+  datarootA = 'images/original_B.png'
+  name='Lion_Cat'
+  k_final=20
+  results_dir = '../results'
+  o = Options()
+  o.setoptions(datarootA, datarootA, name=name, k_final=k_final, results_dir=results_dir)
+  nbb.run(o.opt)
+  ```
 Below the line is information included in original repo. 
 
 -----------------
