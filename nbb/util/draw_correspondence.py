@@ -70,8 +70,9 @@ def draw_points(self, A, points, radius, name, save_dir, unicolor = False, level
             A_marked = draw_circle(A_marked, center, color)
         else:
             A_marked = draw_dots(A_marked, center, color)
-
-    util.save_image(A_marked, os.path.join(save_dir, name + '.png'))
+    if save_dir is not None:
+        util.save_image(A_marked, os.path.join(save_dir, name + '.png'))
+    return A_marked
 
 def draw_correspondence(A, B, correspondence, radius, save_dir, level = 0, name=''):
     A_marked = util.tensor2im(A)
@@ -86,6 +87,7 @@ def draw_correspondence(A, B, correspondence, radius, save_dir, level = 0, name=
         else:
             A_marked = draw_square(A_marked, [center_1[0]+radius, center_1[1]+radius], color, radius=radius)
             B_marked = draw_square(B_marked, [center_2[0]+radius, center_2[1]+radius], color, radius=radius)
-
-    util.save_image(A_marked, os.path.join(save_dir, 'A_level_'+str(level)+name+'.png'))
-    util.save_image(B_marked, os.path.join(save_dir, 'B_level_'+str(level)+name+'.png'))
+    if save_dir is not None:    
+        util.save_image(A_marked, os.path.join(save_dir, 'A_level_'+str(level)+name+'.png'))
+        util.save_image(B_marked, os.path.join(save_dir, 'B_level_'+str(level)+name+'.png'))
+    return A_marked, B_marked

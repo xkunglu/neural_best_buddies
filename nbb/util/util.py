@@ -26,7 +26,8 @@ def read_image(path, witdh):
 def get_transform(witdh):
     transform_list = []
     osize = [witdh, witdh]
-    transform_list.append(transforms.Scale(osize, Image.BICUBIC))
+    # replaced .Scale by .Resize - deprecated in pytorch> 0.5
+    transform_list.append(transforms.Resize(osize, Image.BICUBIC))
     transform_list += [transforms.ToTensor(),
                        transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                             std=[0.229, 0.224, 0.225])]
@@ -152,10 +153,10 @@ def info(object, spacing=10, collapse=1):
     Takes module, class, list, dictionary, or string."""
     methodList = [e for e in dir(object) if isinstance(getattr(object, e), collections.Callable)]
     processFunc = collapse and (lambda s: " ".join(s.split())) or (lambda s: s)
-    print( "\n".join(["%s %s" %
+    print("\n".join(["%s %s" %
                      (method.ljust(spacing),
                       processFunc(str(getattr(object, method).__doc__)))
-                     for method in methodList]) )
+                     for method in methodList]))
 
 def varname(p):
     for line in inspect.getframeinfo(inspect.currentframe().f_back)[3]:
@@ -186,6 +187,7 @@ def mkdir(path):
 def read_mask(path):
     image = Image.open(path)
     np_image = np.array(image)
-    np_image = np_image[:,:,0]
+    np_image = np_image[:, :, 0]
     print(np_image.shape)
     return np.where(np_image>128, 1, 0)
+

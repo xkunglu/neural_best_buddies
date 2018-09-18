@@ -18,28 +18,28 @@ class sparse_semantic_correspondence():
         self.tau = tau
         self.k_per_level = k_per_level
         self.k_final = k_final
-        self.patch_size_list = [[5,5],[5,5],[3,3],[3,3],[3,3]]
-        self.search_box_radius_list = [3,3,2,2,2]
-        self.draw_radius = [2,2,2,4,8]
+        self.patch_size_list = [[5, 5], [5, 5], [3, 3], [3, 3], [3, 3]]
+        self.search_box_radius_list = [3, 3, 2, 2, 2]
+        self.draw_radius = [2, 2, 2, 4, 8]
         self.pad_mode = 'reflect'
         self.L_final = 2 if fast else 1
 
     def find_mapping(self, A, B, patch_size, initial_mapping, search_box_radius):
-        assert(A.size() == B.size())
-        A_to_B_map = self.Tensor(1,2,A.size(2),A.size(3))
-        loss_map = self.Tensor(1,1,A.size(2),A.size(3))
-        mapping_distance_map = self.Tensor(1,1,A.size(2),A.size(3))
-        [dx,dy] = [math.floor(patch_size[0]/2), math.floor(patch_size[1]/2)]
-        pad_size = tuple([dy,dy,dx,dx])
+        assert A.size() == B.size()
+        A_to_B_map = self.Tensor(1 ,2, A.size(2), A.size(3))
+        loss_map = self.Tensor(1, 1, A.size(2), A.size(3))
+        mapping_distance_map = self.Tensor(1, 1, A.size(2), A.size(3))
+        [dx, dy] = [math.floor(patch_size[0]/2), math.floor(patch_size[1]/2)]
+        pad_size = tuple([dy, dy, dx, dx])
         A_padded = functional.pad(A, pad_size, self.pad_mode).data
         B_padded = functional.pad(B, pad_size, self.pad_mode).data
 
         for i in range(A.size(2)):
             for j in range(A.size(3)):
-                init_pix_numpy = initial_mapping[0,:,i,j].cpu().numpy()
-                candidate_patch_A = A_padded[:,:,(i):(i+2*dx+1),(j):(j+2*dy+1)]
-                index = self.find_closest_patch_index(B_padded, candidate_patch_A, initial_mapping[0,:,i,j], search_box_radius)
-                A_to_B_map[:,:,i,j] = self.Tensor([index[0]-dx, index[1]-dy])
+                init_pix_numpy = initial_mapping[0, :, i, j].cpu().numpy()
+                candidate_patch_A = A_padded[:, :, (i):(i+2*dx+1), (j):(j+2*dy+1)]
+                index = self.find_closest_patch_index(B_padded, candidate_patch_A, initial_mapping[0, :, i, j], search_box_radius)
+                A_to_B_map[:, :, i, j] = self.Tensor([index[0]-dx, index[1]-dy])
 
         return A_to_B_map
 
@@ -91,7 +91,7 @@ class sparse_semantic_correspondence():
         return warped_A[:, :, dx:(warped_A.size(2)-dx), dy:(warped_A.size(3)-dy)]/counter[:, :, dx:(warped_A.size(2)-dx), dy:(warped_A.size(3)-dy)]
 
     def normalize_0_to_1(self, F):
-        assert(F.dim() == 4)
+        assert F.dim() == 4
         max_val = F.max()
         min_val = F.min()
         if max_val != min_val:
@@ -105,35 +105,35 @@ class sparse_semantic_correspondence():
         if level == 1:
             return mapping
         else:
-            identity_map_L =  self.identity_map(mapping.size())
+            identity_map_L = self.identity_map(mapping.size())
             identity_map_original = self.identity_map(original_image_size)
-            factor = int(math.pow(2,level-1))
-            return identity_map_original + self.upsample_mapping(mapping - identity_map_L,factor = factor)
+            factor = int(math.pow(2, level-1))
+            return identity_map_original + self.upsample_mapping(mapping - identity_map_L, factor=factor)
 
-    def upsample_mapping(self, mapping, factor = 2):
+    def upsample_mapping(self, mapping, factor=2):
         upsampler = torch.nn.Upsample(scale_factor=factor, mode='nearest')
         return upsampler(Variable(factor*mapping)).data
 
     def get_M(self, F, tau=0.05):
-        assert(F.dim() == 4)
-        F_squared_sum = F.pow(2).sum(1,keepdim=True).expand_as(F)
+        assert F.dim() == 4
+        F_squared_sum = F.pow(2).sum(1, keepdim=True).expand_as(F)
         F_normalized = self.normalize_0_to_1(F_squared_sum)
         M = self.Tensor(F_normalized.size())
-        M.copy_(torch.ge(F_normalized,tau))
+        M.copy_(torch.ge(F_normalized, tau))
         return M
 
     def identity_map(self, size):
-        idnty_map = self.Tensor(size[0],2,size[2],size[3])
-        idnty_map[0,0,:,:].copy_(torch.arange(0,size[2]).repeat(size[3],1).transpose(0,1))
-        idnty_map[0,1,:,:].copy_(torch.arange(0,size[3]).repeat(size[2],1))
+        idnty_map = self.Tensor(size[0], 2, size[2], size[3])
+        idnty_map[0, 0, :, :].copy_(torch.arange(0, size[2]).repeat(size[3], 1).transpose(0, 1))
+        idnty_map[0, 1, :, :].copy_(torch.arange(0, size[3]).repeat(size[2], 1))
         return idnty_map
 
     def spatial_distance(self, point_A, point_B):
-        return math.pow((point_A - point_B).pow(2).sum(),0.5)
+        return math.pow((point_A - point_B).pow(2).sum(), 0.5)
 
     def find_neural_best_buddies(self, correspondence, F_A, F_Am, F_Bm, F_B, patch_size, initial_map_a_to_b, initial_map_b_to_a, search_box_radius, tau, top, deepest_level=False):
-        assert(F_A.size() == F_Bm.size())
-        assert(F_Am.size() == F_B.size())
+        assert F_A.size() == F_Bm.size()
+        assert F_Am.size() == F_B.size()
 
         F_Am_normalized = FM.normalize_per_pix(F_Am)
         F_Bm_normalized = FM.normalize_per_pix(F_Bm)
@@ -146,7 +146,7 @@ class sparse_semantic_correspondence():
             refined_correspondence = self.limit_correspondence_number_per_level(refined_correspondence, F_A, F_B, self.tau, top=int(top))
         else:
             refined_correspondence = correspondence
-            for i in range(len(correspondence[0])-1,-1,-1):
+            for i in range(len(correspondence[0])-1, -1, -1):
                 [top_left_1, bottom_right_1] = self.extract_receptive_field(correspondence[0][i][0], correspondence[0][i][1], search_box_radius, [a_to_b.size(2), a_to_b.size(3)])
                 [top_left_2, bottom_right_2] = self.extract_receptive_field(correspondence[1][i][0], correspondence[1][i][1], search_box_radius, [a_to_b.size(2), a_to_b.size(3)])
                 refined_correspondence_i = self.find_best_buddies(a_to_b, b_to_a, top_left_1, bottom_right_1, top_left_2, bottom_right_2)
@@ -157,7 +157,7 @@ class sparse_semantic_correspondence():
 
         return [refined_correspondence, a_to_b, b_to_a]
 
-    def find_best_buddies(self, a_to_b, b_to_a, top_left_1 = [0,0], bottom_right_1 = [float('inf'), float('inf')], top_left_2 = [0,0], bottom_right_2 = [float('inf'), float('inf')]):
+    def find_best_buddies(self, a_to_b, b_to_a, top_left_1=[0,0], bottom_right_1=[float('inf'), float('inf')], top_left_2=[0,0], bottom_right_2=[float('inf'), float('inf')]):
         assert(a_to_b.size() == b_to_a.size())
         correspondence = [[],[]]
         loss = []
@@ -292,6 +292,17 @@ class sparse_semantic_correspondence():
 
         return scaled_correspondence
 
+    def gpuresize(self, img, size):
+        """some torchvision versions assert on resize, bypass """
+        if isinstance(size, float):
+            size = tuple(np.ceil(np.array(img.size()[-2:])*size).astype(int))
+        return (functional.adaptive_avg_pool2d(Variable(img), size)).data
+
+    def inv_scale_image(self, img, level):
+        """inverse of scale correspondence, to scale image instead of buddies"""
+        scale_factor = 1.0/ int(math.pow(2, level-1))
+        return self.gpuresize(img, scale_factor)
+
     def save_correspondence_as_txt(self, correspondence, name=''):
         self.save_points_as_txt(correspondence[0], 'correspondence_A' + name)
         self.save_points_as_txt(correspondence[1], 'correspondence_Bt' + name)
@@ -353,10 +364,11 @@ class sparse_semantic_correspondence():
         return [FL_1A, FL_1B, FL_1Am, FL_1Bm, initial_map_a_to_b, initial_map_b_to_a]
 
     def finalize_correspondence(self, correspondence, image_width, L):
-        print("Drawing correspondence...")
         unique_correspondence = self.make_correspondence_unique(correspondence)
         scaled_correspondence = self.scale_correspondence(unique_correspondence, L)
-        draw.draw_correspondence(self.A, self.B, scaled_correspondence, self.draw_radius[L-1], self.save_dir, L)
+        if self.save_dir is not None:
+            print("Drawing correspondence...")
+            draw.draw_correspondence(self.A, self.B, scaled_correspondence, self.draw_radius[L-1], self.save_dir, L)
         scaled_correspondence = self.remove_border_correspondence(scaled_correspondence, self.border_size, image_width)
         print("No. of correspondence: ", len(scaled_correspondence[0]))
         return scaled_correspondence
@@ -364,10 +376,12 @@ class sparse_semantic_correspondence():
     def run(self, A, B):
         assert(A.size() == B.size())
         image_width = A.size(3)
-        print("Saving original images...")
-        util.mkdir(self.save_dir)
-        util.save_final_image(A, 'original_A', self.save_dir)
-        util.save_final_image(B, 'original_B', self.save_dir)
+        if self.save_dir is not None:
+            print("Saving original images...")
+            util.mkdir(self.save_dir)
+            util.save_final_image(A, 'original_A', self.save_dir)
+            util.save_final_image(B, 'original_B', self.save_dir)
+            
         self.A = self.Tensor(A.size()).copy_(A)
         self.B = self.Tensor(B.size()).copy_(B)
         print("Starting algorithm...")
@@ -383,7 +397,11 @@ class sparse_semantic_correspondence():
         initial_map_a_to_b = self.identity_map(F_B.size())
         initial_map_b_to_a = initial_map_a_to_b.clone()
 
-        for L in range(L_start,self.L_final-1,-1):
+        print(self.L_final-1, L_start)
+        self.intermediate_correspondences = []
+        self.intermediate_images = []
+
+        for L in range(L_start, self.L_final-1, -1):
             patch_size = self.patch_size_list[L-1]
             search_box_radius = self.search_box_radius_list[L-1]
             draw_radius = self.draw_radius[L-1]
@@ -400,17 +418,29 @@ class sparse_semantic_correspondence():
             correspondence = self.threshold_response_correspondence(correspondence, F_A, F_B, self.tau)
 
             if L > self.L_final:
-                print("Drawing correspondence...")
                 scaled_correspondence = self.scale_correspondence(correspondence, L)
-                draw.draw_correspondence(self.A, self.B, scaled_correspondence, draw_radius, self.save_dir, L)
+                self.intermediate_correspondences.append(scaled_correspondence)
+
+                print("Drawing correspondence...")
+                A_marked, B_marked = draw.draw_correspondence(self.A, self.B, scaled_correspondence, draw_radius, self.save_dir, L)
+
+                # instead of scaling the correspondences up, maybe we should look at the correspondences in the scaled down image
+                # A_scaled, B_scaled = draw.draw_correspondence(self.inv_scale_image(self.A, L), self.inv_scale_image(self.B, L), correspondence, draw_radius, self.save_dir, L)
+                self.intermediate_images.append((A_marked, B_marked))
 
             [F_A, F_B, F_Am, F_Bm, initial_map_a_to_b, initial_map_b_to_a] = self.transfer_style_local(F_A, F_B, patch_size, image_width, mapping_a_to_b, mapping_b_to_a, L)
 
         filtered_correspondence = self.finalize_correspondence(correspondence, image_width, self.L_final)
-        draw.draw_correspondence(self.A, self.B, filtered_correspondence, self.draw_radius[self.L_final-1], self.save_dir)
-        self.save_correspondence_as_txt(filtered_correspondence)
+
+        self.correspondences = filtered_correspondence
+
+        if self.save_dir is not None:
+            A_marked, B_marked = draw.draw_correspondence(self.A, self.B, filtered_correspondence, self.draw_radius[self.L_final-1], self.save_dir)
+            self.save_correspondence_as_txt(filtered_correspondence)
         top_k_correspondence = self.top_k_in_clusters(filtered_correspondence, self.k_final)
-        draw.draw_correspondence(self.A, self.B, top_k_correspondence, self.draw_radius[self.L_final-1], self.save_dir, name='_top_'+str(self.k_final))
-        self.save_correspondence_as_txt(top_k_correspondence, name='_top_'+str(self.k_final))
+
+        if self.save_dir is not None:
+            A_marked, B_marked = draw.draw_correspondence(self.A, self.B, top_k_correspondence, self.draw_radius[self.L_final-1], self.save_dir, name='_top_'+str(self.k_final))
+            self.save_correspondence_as_txt(top_k_correspondence, name='_top_'+str(self.k_final))
 
         return scaled_correspondence

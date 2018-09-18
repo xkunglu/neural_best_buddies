@@ -20,7 +20,7 @@ def setup_package():
 
     metadata = dict(
         name='nbb',
-        version='0.0.1',
+        version='0.0.2',
         description='semantic descriptors',
         url='https://github.com/xkunglu/neural_best_buddies',
         license='need to inquire with auhors',

@@ -44,7 +44,6 @@ class Options():
         Required arguments and empty arguments are passed independently
         Boolean and array arguments are turned to string.
 
-        
         """
         self.parser.add_argument('--datarootA', required=True, help='path to image A')
         self.parser.add_argument('--datarootB', required=True, help='path to image B')
@@ -60,7 +59,7 @@ class Options():
             arghelp = self.args[arg][1]
 
             # None and list types need to be string for parser
-            if arg =='save_path':
+            if arg == 'save_path':
                 argdefault = str(argdefault)
             if arg == 'gpu_ids':
                 argdefault = ','.join(str(argd) for argd in argdefault)
@@ -89,9 +88,9 @@ class Options():
             else:
                 odic[arg] = self.args[arg][0]
             print(arg, self.args[arg][0])
+            
+        #todo find a less assbackwards way of updating class with dict
         self.opt = Opt(**odic)
-        print
-
         self.initialized = True
 
     def parse(self):

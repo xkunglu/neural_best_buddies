@@ -10,4 +10,4 @@ from nbb.options import Options
 import nbb
 
 if __name__ == '__main__':
-    nbb.run(Options().parse())
+    nbb.run_files(Options().parse())
