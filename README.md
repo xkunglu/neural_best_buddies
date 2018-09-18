@@ -4,18 +4,17 @@ This is a fork of Kfir Aberman and Mingyi Shi's Neural Best Buddies repo.
 Contains only minor changes. Original can be found in 
 https://github.com/kfiraberman/neural_best_buddies.
 
-* changes: 
-  automatically convert images to size 224x224; larger images fail in original depot
-  TODO need to investigate why, original repo tries to do resizing with torchvision transform
+changes from original repo
+--------------------------
+* force convert images to size 224x224; larger images fail in original depot. possibly a pytorch issue with torchvision.transforms.Scale and .Resizw( ?) need to investigate why
 
-  added pip installer:
+* added pip installer:
   ```bash
   cd neural_best_buddies
   pip install .
 
   ```
-  
-  added access from python.
+* added access from python.
   TODO file loading and saving as options; enable numpy array io
   ```python
   import nbb
@@ -29,11 +28,14 @@ https://github.com/kfiraberman/neural_best_buddies.
   o.setoptions(datarootA, datarootA, name=name, k_final=k_final, results_dir=results_dir)
   nbb.run(o.opt)
   ```
+* added option to not save images; output images as numpy array
+* added a jupyter notebook to visualize changes
+
+-xk
+
+
 Below the line is information included in original repo. 
-
 -----------------
-
-
 The code was written by [Kfir Aberman](https://kfiraberman.github.io/) and supported by [Mingyi Shi](https://rubbly.cn/).
 
 **Neural Best-Buddies: [Project](http://fve.bfa.edu.cn/recap/nbbs/) |  [Paper](https://arxiv.org/pdf/1805.04140.pdf)**
